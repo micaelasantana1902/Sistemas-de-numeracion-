@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistemas de Numeración</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080e1a;
+    --panel: #0f1c2e;
+    --card: #132032;
+    --cyan: #00e5ff;
+    --purple: #9b59ff;
+    --orange: #ff6b35;
+    --gold: #ffd166;
+    --green: #06d6a0;
+    --white: #f0f8ff;
+    --gray: #5e7a99;
+    --light: #c8ddf0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--white);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── SLIDES CONTAINER ── */
+  #slides {
+    width: 100%; height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateY(30px);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+  .slide.exit-up {
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  /* ── NAVIGATION ── */
+  #nav {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(15,28,46,0.85);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 50px;
+    padding: 10px 24px;
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    background: transparent;
+    color: var(--cyan);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--cyan); color: var(--bg); }
+
+  #dots { display: flex; gap: 8px; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gray);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--cyan); width: 22px; border-radius: 4px; }
+
+  #slide-count { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--gray); min-width: 40px; text-align: center; }
+
+  /* ── PROGRESS BAR ── */
+  #progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    transition: width 0.5s ease;
+    z-index: 200;
+  }
+
+  /* ── KEYBOARD HINT ── */
+  #hint {
+    position: fixed; top: 20px; right: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--gray);
+    opacity: 0.6;
+  }
+  #hint kbd {
+    background: var(--card);
+    border: 1px solid var(--gray);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 1 — PORTADA
+  ════════════════════════════════════ */
+  #s1 { align-items: flex-start; overflow: hidden; }
+
+  .s1-bg-circles {
+    position: absolute; inset: 0; pointer-events: none;
+    overflow: hidden;
+  }
+  .s1-bg-circles span {
+    position: absolute;
+    border-radius: 50%;
+    animation: float 8s ease-in-out infinite alternate;
+  }
+  .c1 { width: 500px; height: 500px; right: -100px; top: -100px; background: radial-gradient(circle, rgba(155,89,255,0.18) 0%, transparent 70%); animation-delay: 0s; }
+  .c2 { width: 300px; height: 300px; right: 100px; bottom: 0; background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%); animation-delay: 2s; }
+  .c3 { width: 180px; height: 180px; left: 40%; top: 60%; background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%); animation-delay: 4s; }
+
+  @keyframes float { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(1.05); } }
+
+  .s1-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .s1-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(52px, 8vw, 88px);
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+  .s1-title .line1 { color: var(--white); display: block; }
+  .s1-title .line2 { color: var(--cyan); display: block; position: relative; }
+
+  .s1-sub {
+    font-size: 18px;
+    color: var(--gray);
+    font-weight: 300;
+    margin-top: 20px;
+    font-style: italic;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  .s1-binary {
+    position: absolute;
+    right: 60px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    opacity: 0.18;
+    line-height: 2;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  .s1-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, var(--cyan), var(--purple));
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 2 — DEFINICIÓN
+  ════════════════════════════════════ */
+  #s2 { align-items: flex-start; }
+
+  .slide-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .slide-title {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700;
+    margin-bottom: 36px;
+    line-height: 1.1;
+  }
+
+  .def-card {
+    background: var(--panel);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-left: 4px solid var(--cyan);
+    border-radius: 12px;
+    padding: 28px 32px;
+    font-size: 20px;
+    line-height: 1.6;
+    font-style: italic;
+    color: var(--light);
+    max-width: 800px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .def-card::before {
+    content: '"';
+    position: absolute;
+    top: -20px; left: 20px;
+    font-size: 80px;
+    color: var(--cyan);
+    opacity: 0.2;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+
+  .usos-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .usos-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .uso-chip {
+    background: var(--card);
+    border: 1px solid rgba(155,89,255,0.35);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--light);
+    transition: border-color 0.3s;
+    max-width: 280px;
+  }
+  .uso-chip:hover { border-color: var(--purple); }
+  .uso-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--purple);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 3 — TIPOS
+  ════════════════════════════════════ */
+  #s3 { padding-top: 40px; justify-content: flex-start; overflow: hidden; }
+
+  .tipos-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .tipo-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px 18px;
+    border-top: 3px solid var(--card);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .tipo-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .tipo-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .tipo-card.c-cyan  { border-top-color: var(--cyan); }
+  .tipo-card.c-purple{ border-top-color: var(--purple); }
+  .tipo-card.c-green { border-top-color: var(--green); }
+  .tipo-card.c-orange{ border-top-color: var(--orange); }
+  .tipo-card.c-gold  { border-top-color: var(--gold); }
+
+  .tipo-base {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .tipo-card.c-cyan   .tipo-base { color: var(--cyan); }
+  .tipo-card.c-purple .tipo-base { color: var(--purple); }
+  .tipo-card.c-green  .tipo-base { color: var(--green); }
+  .tipo-card.c-orange .tipo-base { color: var(--orange); }
+  .tipo-card.c-gold   .tipo-base { color: var(--gold); }
+
+  .tipo-nombre {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--white);
+  }
+  .tipo-digitos {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .tipo-card.c-cyan   .tipo-digitos { color: var(--cyan); }
+  .tipo-card.c-purple .tipo-digitos { color: var(--purple); }
+  .tipo-card.c-green  .tipo-digitos { color: var(--green); }
+  .tipo-card.c-orange .tipo-digitos { color: var(--orange); }
+  .tipo-card.c-gold   .tipo-digitos { color: var(--gold); }
+
+  .tipo-desc {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 4 — CONVERSIÓN CONCEPTO
+  ════════════════════════════════════ */
+  #s4 { align-items: flex-start; }
+
+  .conv-intro {
+    background: var(--panel);
+    border-left: 4px solid var(--purple);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 28px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--light);
+    max-width: 860px;
+    margin-bottom: 36px;
+  }
+
+  .pasos-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .pasos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    width: 100%;
+  }
+
+  .paso-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px 16px;
+    position: relative;
+    border: 1px solid rgba(0,229,255,0.1);
+    transition: border-color 0.3s;
+  }
+  .paso-card:hover { border-color: rgba(0,229,255,0.35); }
+
+  .paso-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--cyan);
+    color: var(--bg);
+    font-weight: 700;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .paso-h {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .paso-p {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* connector arrows */
+  .pasos-grid .paso-card:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -16px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--cyan);
+    font-size: 18px;
+    z-index: 10;
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 5 — EJEMPLO INTERACTIVO
+  ════════════════════════════════════ */
+  #s5 { align-items: flex-start; }
+
+  .example-label {
+    font-size: 15px;
+    color: var(--gray);
+    margin-bottom: 24px;
+  }
+
+  .bits-display {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .bit-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bit-box {
+    width: 100px; height: 100px;
+    border-radius: 12px;
+    border: 2px solid var(--gray);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 52px;
+    font-weight: 700;
+    transition: all 0.3s;
+    cursor: pointer;
+    background: var(--card);
+    color: var(--gray);
+  }
+  .bit-box.on {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0,229,255,0.07);
+    box-shadow: 0 0 24px rgba(0,229,255,0.2);
+  }
+
+  .bit-pow {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .bit-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    transition: color 0.3s;
+  }
+  .bit-box.on ~ .bit-val { color: var(--cyan); }
+  .bit-val.dim { color: var(--gray); }
+
+  .result-bar {
+    background: var(--panel);
+    border: 2px solid var(--cyan);
+    border-radius: 14px;
+    padding: 20px 32px;
+    margin-top: 12px;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .result-eq {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: var(--light);
+  }
+
+  .result-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--cyan);
+    line-height: 1;
+    transition: all 0.3s;
+  }
+
+  .result-label {
+    font-size: 14px;
+    color: var(--gray);
+    align-self: flex-end;
+    margin-bottom: 8px;
+  }
+
+  .hint-click {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* ════════════════════════════════════
+     SLIDE 6 — RESUMEN
+  ════════════════════════════════════ */
+  #s6 { overflow: hidden; }
+
+  .resumen-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(155,89,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(0,229,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .resumen-super {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .resumen-big {
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 48px;
+  }
+  .resumen-big em { color: var(--cyan); font-style: normal; }
+
+  .resumen-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .res-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 28px;
+    width: 200px;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .res-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+
+  .res-card.rc-cyan   { border-bottom-color: var(--cyan); }
+  .res-card.rc-purple { border-bottom-color: var(--purple); }
+  .res-card.rc-orange { border-bottom-color: var(--orange); }
+  .res-card.rc-gold   { border-bottom-color: var(--gold); }
+  .res-card.rc-green  { border-bottom-color: var(--green); }
+
+  .rc-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .res-card.rc-cyan   .rc-name { color: var(--cyan); }
+  .res-card.rc-purple .rc-name { color: var(--purple); }
+  .res-card.rc-orange .rc-name { color: var(--orange); }
+  .res-card.rc-gold   .rc-name { color: var(--gold); }
+  .res-card.rc-green  .rc-name { color: var(--green); }
+
+  .rc-use { font-size: 13px; color: var(--gray); line-height: 1.4; }
+
+  /* ════════════════════════════════════
+     SLIDES DECIMAL & BINARIO
+  ════════════════════════════════════ */
+  #s4, #s5b { align-items: flex-start; overflow: hidden; }
+  #s5c { align-items: flex-start; }
+
+  .dec-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .dec-block {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 24px 26px;
+    border-top: 3px solid var(--cyan);
+  }
+
+  .dec-block-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+
+  .dec-block p {
+    font-size: 14px;
+    color: var(--light);
+    line-height: 1.65;
+  }
+
+  .dec-block p strong { color: var(--cyan); }
+
+  .dec-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .dec-tl-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .dec-tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--cyan);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .dec-tl-text { font-size: 13px; color: var(--light); line-height: 1.5; }
+  .dec-tl-text strong { color: var(--cyan); }
+
+  /* posicional demo */
+  .pos-demo {
+    margin-top: 24px;
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 20px 28px;
+    width: 100%;
+  }
+
+  .pos-demo-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .pos-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .pos-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pos-exp {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--purple);
+  }
+
+  .pos-box {
+    width: 54px; height: 54px;
+    background: var(--card);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+
+  .pos-val {
+    font-size: 11px;
+    color: var(--gray);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .pos-sep {
+    font-size: 24px;
+    color: var(--gray);
+    margin-bottom: 14px;
+    font-weight: 300;
+  }
+
+  /* binario slide */
+  .bin-def {
+    background: var(--panel);
+    border-left: 4px solid var(--purple);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 26px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--light);
+    width: 100%;
+    margin-bottom: 22px;
+  }
+
+  .bin-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .bin-block {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px 22px;
+    border-top: 3px solid var(--purple);
+  }
+
+  .bin-block-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+
+  .bin-block p {
+    font-size: 14px;
+    color: var(--light);
+    line-height: 1.6;
+  }
+
+  .bin-example {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    color: var(--purple);
+    font-weight: 700;
+    letter-spacing: 4px;
+    display: block;
+    margin: 12px 0 4px;
+  }
+
+  .bin-read {
+    font-size: 13px;
+    color: var(--gray);
+    font-style: italic;
+  }
+
+  .bin-count-table {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .bin-ct-cell {
+    background: var(--panel);
+    border-radius: 6px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  .bin-ct-dec {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+  }
+
+  .bin-ct-bin {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--purple);
+  }
+
+  /* ════════════════════════════════════
+     SLIDE DEC→BIN
+  ════════════════════════════════════ */
+  #s_dec2bin { align-items: flex-start; }
+
+  .d2b-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 24px;
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .d2b-explain {
+    background: var(--panel);
+    border-left: 4px solid var(--orange);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 22px;
+  }
+
+  .d2b-explain-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 14px;
+  }
+
+  .d2b-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .d2b-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .d2b-step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--orange);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .d2b-step p { font-size: 13px; color: var(--light); line-height: 1.55; }
+  .d2b-step p strong { color: var(--orange); }
+
+  .d2b-alert {
+    margin-top: 16px;
+    background: rgba(255,107,53,0.1);
+    border: 1px solid rgba(255,107,53,0.35);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 600;
+  }
+
+  /* interactive */
+  .d2b-interactive {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px 22px;
+    border-top: 3px solid var(--orange);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .d2b-interactive-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+
+  .d2b-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #d2b-number {
+    background: var(--panel);
+    border: 2px solid rgba(255,107,53,0.4);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 8px 14px;
+    width: 110px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #d2b-number:focus { border-color: var(--orange); }
+
+  .d2b-convert-btn {
+    background: var(--orange);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .d2b-convert-btn:hover { opacity: 0.85; }
+
+  .d2b-division-table {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .d2b-div-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--panel);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .d2b-div-row.show { opacity: 1; transform: translateY(0); }
+  .d2b-div-row.highlighted { background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3); }
+
+  .d2b-div-num { color: var(--light); min-width: 48px; text-align: right; }
+  .d2b-div-op  { color: var(--gray); }
+  .d2b-div-q   { color: var(--white); min-width: 36px; }
+  .d2b-div-r   { color: var(--orange); font-weight: 700; min-width: 24px; }
+  .d2b-div-arrow { color: var(--orange); font-size: 10px; }
+
+  .d2b-result-row {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .d2b-result-label { font-size: 12px; color: var(--gray); }
+  .d2b-result-bin {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: 3px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active .anim { animation: fadeInUp 0.5s ease both; }
+  .slide.active .anim:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active .anim:nth-child(2) { animation-delay: 0.2s; }
+  .slide.active .anim:nth-child(3) { animation-delay: 0.3s; }
+  .slide.active .anim:nth-child(4) { animation-delay: 0.4s; }
+  .slide.active .anim:nth-child(5) { animation-delay: 0.5s; }
+  .slide.active .anim:nth-child(6) { animation-delay: 0.6s; }
+
+  /* stagger for grids */
+  .slide.active .tipo-card,
+  .slide.active .paso-card,
+  .slide.active .res-card,
+  .slide.active .uso-chip {
+    animation: fadeInUp 0.5s ease both;
+  }
+  .slide.active .tipo-card:nth-child(1),
+  .slide.active .paso-card:nth-child(1),
+  .slide.active .res-card:nth-child(1),
+  .slide.active .uso-chip:nth-child(1) { animation-delay: 0.3s; }
+  .slide.active .tipo-card:nth-child(2),
+  .slide.active .paso-card:nth-child(2),
+  .slide.active .res-card:nth-child(2),
+  .slide.active .uso-chip:nth-child(2) { animation-delay: 0.4s; }
+  .slide.active .tipo-card:nth-child(3),
+  .slide.active .paso-card:nth-child(3),
+  .slide.active .res-card:nth-child(3),
+  .slide.active .uso-chip:nth-child(3) { animation-delay: 0.5s; }
+  .slide.active .tipo-card:nth-child(4),
+  .slide.active .paso-card:nth-child(4),
+  .slide.active .res-card:nth-child(4) { animation-delay: 0.6s; }
+  .slide.active .tipo-card:nth-child(5),
+  .slide.active .res-card:nth-child(5) { animation-delay: 0.7s; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="hint"><kbd>←</kbd> <kbd>→</kbd> para navegar</div>
+
+<div id="slides">
+
+  <!-- SLIDE 1: PORTADA -->
+  <div class="slide active" id="s1">
+    <div class="s1-bar"></div>
+    <div class="s1-bg-circles">
+      <span class="c1"></span>
+      <span class="c2"></span>
+      <span class="c3"></span>
+    </div>
+    <div class="s1-binary">
+      01001011 00110101 10010110<br>
+      11010010 01101001 11001010<br>
+      00110110 10100111 01011001<br>
+      10111010 00101101 01110010<br>
+      01100101 11010101 00101011<br>
+      10010011 01110100 11001101<br>
+      00011010 10011100 01101110
+    </div>
+    <div class="s1-tag anim">Computación · Matemáticas</div>
+    <h1 class="s1-title anim">
+      <span class="line1">Sistemas de</span>
+      <span class="line2">Numeración</span>
+    </h1>
+    <p class="s1-sub anim">El lenguaje de los números y las computadoras</p>
+  </div>
+
+  <!-- SLIDE 2: DEFINICIÓN -->
+  <div class="slide" id="s2">
+    <div class="slide-header anim">Introducción</div>
+    <h2 class="slide-title anim">¿Qué es un sistema<br>de numeración?</h2>
+    <div class="def-card anim">
+      Una forma de escribir y representar números usando diferentes símbolos y reglas. Es el "idioma" que usamos para contar.
+    </div>
+    <div class="usos-title anim">¿Para qué sirven?</div>
+    <div class="usos-grid anim">
+      <div class="uso-chip">
+        <div class="uso-num">1</div>
+        <span>Medir y hacer cálculos de forma ordenada</span>
+      </div>
+      <div class="uso-chip">
+        <div class="uso-num">2</div>
+        <span>Contar con precisión y consistencia</span>
+      </div>
+      <div class="uso-chip">
+        <div class="uso-num">3</div>
+        <span>Hacer matemáticas, usar computadoras y medir cosas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: TIPOS -->
+  <div class="slide" id="s3">
+    <div class="slide-header anim">Clasificación</div>
+    <h2 class="slide-title anim">Tipos de sistemas de numeración</h2>
+    <div class="tipos-grid">
+      <div class="tipo-card c-cyan">
+        <div class="tipo-base">Base 10</div>
+        <div class="tipo-nombre">Decimal</div>
+        <div class="tipo-digitos">0→9</div>
+        <div class="tipo-desc">El que usamos todos los días. Se cree que lo usamos porque tenemos 10 dedos.</div>
+      </div>
+      <div class="tipo-card c-purple">
+        <div class="tipo-base">Base 2</div>
+        <div class="tipo-nombre">Binario</div>
+        <div class="tipo-digitos">0 · 1</div>
+        <div class="tipo-desc">El que usan y entienden las computadoras.</div>
+      </div>
+      <div class="tipo-card c-green">
+        <div class="tipo-base">Base 8</div>
+        <div class="tipo-nombre">Octal</div>
+        <div class="tipo-digitos">0→7</div>
+        <div class="tipo-desc">Usado en algunos contextos de programación y sistemas.</div>
+      </div>
+      <div class="tipo-card c-orange">
+        <div class="tipo-base">Base 16</div>
+        <div class="tipo-nombre">Hexadecimal</div>
+        <div class="tipo-digitos">0-9 A-F</div>
+        <div class="tipo-desc">Usa números del 0 al 9 y letras de A a F. Muy utilizado en programación.</div>
+      </div>
+      <div class="tipo-card c-gold">
+        <div class="tipo-base">Simbólico</div>
+        <div class="tipo-nombre">Romano</div>
+        <div class="tipo-digitos">I V X L</div>
+        <div class="tipo-desc">No es útil para calcular, pero aún lo vemos en relojes o títulos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: SISTEMA DECIMAL — HISTORIA -->
+  <div class="slide" id="s4">
+    <div class="slide-header anim">Sistema Decimal</div>
+    <h2 class="slide-title anim">El sistema más utilizado del mundo</h2>
+    <div class="dec-two-col anim">
+      <div class="dec-block">
+        <div class="dec-block-title">¿De dónde viene?</div>
+        <div class="dec-timeline">
+          <div class="dec-tl-item">
+            <div class="dec-tl-dot"></div>
+            <div class="dec-tl-text">Civilizaciones antiguas contaban con <strong>base 10</strong>, probablemente porque los humanos tenemos <strong>diez dedos</strong>.</div>
+          </div>
+          <div class="dec-tl-item">
+            <div class="dec-tl-dot"></div>
+            <div class="dec-tl-text">El sistema decimal moderno surgió en la <strong>Antigua India</strong>, aproximadamente en los siglos <strong>V y VI d.C.</strong></div>
+          </div>
+          <div class="dec-tl-item">
+            <div class="dec-tl-dot"></div>
+            <div class="dec-tl-text">Allí se desarrolló algo fundamental: el uso del <strong>0 como número</strong> y el sistema <strong>posicional</strong> que usamos hoy.</div>
+          </div>
+          <div class="dec-tl-item">
+            <div class="dec-tl-dot"></div>
+            <div class="dec-tl-text">Ese fue un cambio enorme: permitió escribir los números de manera <strong>mucho más sencilla</strong>.</div>
+          </div>
+        </div>
+      </div>
+      <div class="dec-block">
+        <div class="dec-block-title">Usamos el decimal para...</div>
+        <p>
+          Medir, contar y hacer cálculos en la vida cotidiana.<br><br>
+          Lo usamos en todo momento: al comprar, cocinar, medir distancias, calcular el tiempo y mucho más.<br><br>
+          Sin el sistema decimal, las matemáticas como las conocemos hoy no existirían.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: SISTEMA DECIMAL — CARACTERÍSTICAS -->
+  <div class="slide" id="s5b">
+    <div class="slide-header anim">Sistema Decimal</div>
+    <h2 class="slide-title anim">Características del sistema decimal</h2>
+    <div class="dec-two-col anim">
+      <div class="dec-block">
+        <div class="dec-block-title">Base 10 — Sus dígitos</div>
+        <p>
+          Cuenta con <strong>diez dígitos</strong>:<br><br>
+          <span style="font-family:'Space Mono',monospace; font-size:22px; color:var(--cyan); letter-spacing:4px; font-weight:700;">0 1 2 3 4 5 6 7 8 9</span><br><br>
+          A partir de esos dígitos podemos formar <strong>todos los números que conocemos</strong>.
+        </p>
+      </div>
+      <div class="dec-block">
+        <div class="dec-block-title">Sistema posicional</div>
+        <p>
+          El valor de cada dígito <strong>depende del lugar</strong> en que se encuentra.<br><br>
+          Cada posición representa una <strong>potencia de 10</strong>. Cada posición vale <strong>10 veces más</strong> que la que está a su derecha.
+        </p>
+      </div>
+    </div>
+    <div class="pos-demo anim">
+      <div class="pos-demo-title">Ejemplo posicional — el número 3.425</div>
+      <div class="pos-row">
+        <div class="pos-col">
+          <div class="pos-exp">10³</div>
+          <div class="pos-box">3</div>
+          <div class="pos-val">= 3.000</div>
+        </div>
+        <div class="pos-sep">·</div>
+        <div class="pos-col">
+          <div class="pos-exp">10²</div>
+          <div class="pos-box">4</div>
+          <div class="pos-val">= 400</div>
+        </div>
+        <div class="pos-sep">·</div>
+        <div class="pos-col">
+          <div class="pos-exp">10¹</div>
+          <div class="pos-box">2</div>
+          <div class="pos-val">= 20</div>
+        </div>
+        <div class="pos-sep">·</div>
+        <div class="pos-col">
+          <div class="pos-exp">10⁰</div>
+          <div class="pos-box">5</div>
+          <div class="pos-val">= 5</div>
+        </div>
+        <div class="pos-sep" style="font-size:20px; margin-bottom:18px;">=</div>
+        <div class="pos-col">
+          <div class="pos-exp">&nbsp;</div>
+          <div class="pos-box" style="width:80px; font-size:18px; border-color:var(--cyan); color:var(--cyan);">3.425</div>
+          <div class="pos-val">decimal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5c: SISTEMA BINARIO -->
+  <div class="slide" id="s5c">
+    <div class="slide-header anim">Sistema Binario</div>
+    <h2 class="slide-title anim">¿Qué es el sistema binario?</h2>
+    <div class="bin-def anim">
+      Es un sistema de numeración que usa un conjunto de reglas para expresar números empleando solo dos símbolos llamados <strong>cifras o dígitos</strong>. La cantidad de símbolos determina la base del sistema — por eso el binario es <strong>base 2</strong>.
+    </div>
+    <div class="bin-two-col anim">
+      <div class="bin-block">
+        <div class="bin-block-title">¿Cómo leer un número binario?</div>
+        <p>
+          Debés pronunciar <strong>cada dígito por separado</strong>. Por ejemplo:
+          <span class="bin-example">101</span>
+          <span class="bin-read">Se lee "uno cero uno" — no "ciento uno".</span>
+        </p>
+        <p style="margin-top:12px; font-size:13px; color:var(--gray);">
+          Así no se confunde con el número decimal ciento uno (101).
+        </p>
+      </div>
+      <div class="bin-block">
+        <div class="bin-block-title">Cómo se cuenta en binario</div>
+        <p style="margin-bottom:10px;">En binario solo usamos <strong>0</strong> y <strong>1</strong>:</p>
+        <div class="bin-count-table">
+          <div class="bin-ct-cell"><div class="bin-ct-dec">Dec</div><div class="bin-ct-bin">Bin</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">0</div><div class="bin-ct-bin">0</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">1</div><div class="bin-ct-bin">1</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">2</div><div class="bin-ct-bin">10</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">3</div><div class="bin-ct-bin">11</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">4</div><div class="bin-ct-bin">100</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">5</div><div class="bin-ct-bin">101</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">6</div><div class="bin-ct-bin">110</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">7</div><div class="bin-ct-bin">111</div></div>
+          <div class="bin-ct-cell"><div class="bin-ct-dec">8</div><div class="bin-ct-bin">1000</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE DEC→BIN: CONVERSIÓN DECIMAL A BINARIO -->
+  <div class="slide" id="s_dec2bin">
+    <div class="slide-header anim">Conversión</div>
+    <h2 class="slide-title anim">Decimal → Binario</h2>
+    <div class="d2b-layout anim">
+
+      <div class="d2b-explain">
+        <div class="d2b-explain-title">¿Cómo se convierte?</div>
+        <div class="d2b-steps">
+          <div class="d2b-step">
+            <div class="d2b-step-num">1</div>
+            <p>Dividí el número dado <strong>entre 2</strong> de forma continua.</p>
+          </div>
+          <div class="d2b-step">
+            <div class="d2b-step-num">2</div>
+            <p>Anotá el <strong>cociente</strong> y el <strong>resto</strong> (0 o 1) de cada división.</p>
+          </div>
+          <div class="d2b-step">
+            <div class="d2b-step-num">3</div>
+            <p>Seguí dividiendo el cociente hasta que el cociente sea <strong>1</strong>.</p>
+          </div>
+          <div class="d2b-step">
+            <div class="d2b-step-num">4</div>
+            <p>Leé los restos <strong>de abajo hacia arriba</strong> (o de derecha a izquierda).</p>
+          </div>
+        </div>
+        <div class="d2b-alert">
+          ⬆️ El resultado se lee de abajo → arriba
+        </div>
+      </div>
+
+      <div class="d2b-interactive">
+        <div class="d2b-interactive-title">Probalo vos mismo</div>
+        <div class="d2b-input-row">
+          <input id="d2b-number" type="number" min="1" max="255" value="13" />
+          <button class="d2b-convert-btn" onclick="convertD2B()">Convertir ÷2</button>
+        </div>
+        <div class="d2b-division-table" id="d2b-table"></div>
+        <div class="d2b-result-row" id="d2b-result" style="display:none">
+          <span class="d2b-result-label">Resultado binario:</span>
+          <span class="d2b-result-bin" id="d2b-bin-out"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SLIDE BINARIO→DECIMAL: CONCEPTO -->
+  <div class="slide" id="s4">
+    <div class="slide-header anim">Conversión</div>
+    <h2 class="slide-title anim">Pasar de Binario → Decimal</h2>
+    <div class="conv-intro anim">
+      Cada dígito del número binario tiene un valor que depende de su posición. Lo que hay que hacer es sumar esos valores, leyendo de derecha a izquierda.
+    </div>
+    <div class="pasos-title anim">¿Cómo se hace?</div>
+    <div class="pasos-grid anim">
+      <div class="paso-card">
+        <div class="paso-num">1</div>
+        <div class="paso-h">Cada posición = potencia de 2</div>
+        <div class="paso-p">Una potencia es multiplicación repetida. Ej: 2×2×2×2 = 2⁴</div>
+      </div>
+      <div class="paso-card">
+        <div class="paso-num">2</div>
+        <div class="paso-h">De derecha a izquierda</div>
+        <div class="paso-p">El primer dígito a la derecha tiene la potencia 2⁰ = 1</div>
+      </div>
+      <div class="paso-card">
+        <div class="paso-num">3</div>
+        <div class="paso-h">Cada posición suma 1 a la potencia</div>
+        <div class="paso-p">2do: 2¹, 3ro: 2², 4to: 2³ y así sucesivamente</div>
+      </div>
+      <div class="paso-card">
+        <div class="paso-num">4</div>
+        <div class="paso-h">Multiplicar y sumar</div>
+        <div class="paso-p">Si el dígito es 1, suma el valor. Si es 0, no suma nada.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: EJEMPLO INTERACTIVO -->
+  <div class="slide" id="s5">
+    <div class="slide-header anim">Ejemplo interactivo</div>
+    <h2 class="slide-title anim">Binario → Decimal</h2>
+    <p class="example-label anim">Hacé clic en los bits para cambiarlos y ver la conversión en tiempo real:</p>
+
+    <div class="bits-display anim" id="bits-display">
+      <!-- generado por JS -->
+    </div>
+    <div class="result-bar anim">
+      <div>
+        <div id="result-eq" class="result-eq"></div>
+      </div>
+      <div id="result-val" class="result-val">0</div>
+      <div class="result-label">en decimal</div>
+    </div>
+    <p class="hint-click anim">💡 Hacé clic en cualquier bit para activarlo o desactivarlo</p>
+  </div>
+
+  <!-- SLIDE RESUMEN -->
+  <div class="slide" id="s6">
+    <div class="resumen-bg"></div>
+    <div class="resumen-super anim">En resumen</div>
+    <div class="resumen-big anim">
+      Cada sistema tiene<br><em>su propio uso</em>
+    </div>
+    <div class="resumen-cards">
+      <div class="res-card rc-cyan">
+        <div class="rc-name">Decimal</div>
+        <div class="rc-use">Para el uso cotidiano</div>
+      </div>
+      <div class="res-card rc-purple">
+        <div class="rc-name">Binario</div>
+        <div class="rc-use">Para las computadoras</div>
+      </div>
+      <div class="res-card rc-green">
+        <div class="rc-name">Octal</div>
+        <div class="rc-use">En sistemas de programación</div>
+      </div>
+      <div class="res-card rc-orange">
+        <div class="rc-name">Hexadecimal</div>
+        <div class="rc-use">Para programación y colores</div>
+      </div>
+      <div class="res-card rc-gold">
+        <div class="rc-name">Romano</div>
+        <div class="rc-use">Para la cultura y el arte</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<!-- NAVIGATION -->
+<div id="nav">
+  <button class="nav-btn" id="prev">&#8592;</button>
+  <div id="dots"></div>
+  <span id="slide-count">1 / 10</span>
+  <button class="nav-btn" id="next">&#8594;</button>
+</div>
+
+<script>
+  // ── SLIDER LOGIC ──
+  const slides = document.querySelectorAll('.slide');
+  const N = slides.length;
+  let current = 0;
+
+  const dotsEl   = document.getElementById('dots');
+  const countEl  = document.getElementById('slide-count');
+  const progressEl = document.getElementById('progress');
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(idx) {
+    if (idx === current) return;
+    slides[current].classList.add('exit-up');
+    slides[current].classList.remove('active');
+    setTimeout(() => slides[current === idx ? current : current].classList.remove('exit-up'), 500);
+
+    current = ((idx % N) + N) % N;
+    slides[current].classList.add('active');
+
+    // update dots
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+    countEl.textContent = `${current + 1} / ${N}`;
+    progressEl.style.width = `${((current + 1) / N) * 100}%`;
+
+    // init interactive bits (binario→decimal, now index 8)
+    if (current === 8) initBits();
+  }
+
+  document.getElementById('prev').onclick = () => goTo(current - 1);
+  document.getElementById('next').onclick = () => goTo(current + 1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+  });
+
+  // init progress
+  progressEl.style.width = `${(1 / N) * 100}%`;
+
+  // ── INTERACTIVE BITS ──
+  let bits = [1, 0, 1, 1];  // default: 1011 = 11
+  const pows = [3, 2, 1, 0];
+  let bitsInited = false;
+
+  function initBits() {
+    if (bitsInited) return;
+    bitsInited = true;
+    renderBits();
+  }
+
+  function renderBits() {
+    const container = document.getElementById('bits-display');
+    container.innerHTML = '';
+
+    bits.forEach((b, i) => {
+      const block = document.createElement('div');
+      block.className = 'bit-block';
+
+      const box = document.createElement('div');
+      box.className = 'bit-box' + (b ? ' on' : '');
+      box.textContent = b;
+      box.onclick = () => { bits[i] = bits[i] ? 0 : 1; renderBits(); };
+
+      const pow = document.createElement('div');
+      pow.className = 'bit-pow';
+      pow.innerHTML = `2<sup>${pows[i]}</sup>`;
+
+      const valNum = Math.pow(2, pows[i]);
+      const val = document.createElement('div');
+      val.className = 'bit-val' + (b ? '' : ' dim');
+      val.textContent = b ? `= ${valNum}` : `= 0`;
+
+      block.appendChild(box);
+      block.appendChild(pow);
+      block.appendChild(val);
+      container.appendChild(block);
+    });
+
+    // Result
+    const vals = bits.map((b, i) => b * Math.pow(2, pows[i]));
+    const total = vals.reduce((a, b) => a + b, 0);
+    const eqParts = vals.map(v => v).join(' + ');
+
+    document.getElementById('result-eq').textContent = `${eqParts} =`;
+    const valEl = document.getElementById('result-val');
+    valEl.textContent = total;
+    valEl.style.transform = 'scale(1.15)';
+    setTimeout(() => valEl.style.transform = 'scale(1)', 150);
+  }
+
+  // ── DECIMAL → BINARIO ──
+  function convertD2B() {
+    let num = parseInt(document.getElementById('d2b-number').value);
+    if (isNaN(num) || num < 1 || num > 255) return;
+
+    const table = document.getElementById('d2b-table');
+    const resultRow = document.getElementById('d2b-result');
+    table.innerHTML = '';
+    resultRow.style.display = 'none';
+
+    const steps = [];
+    let n = num;
+    while (n >= 2) {
+      const q = Math.floor(n / 2);
+      const r = n % 2;
+      steps.push({ num: n, quotient: q, remainder: r });
+      n = q;
+    }
+    steps.push({ num: n, quotient: 0, remainder: n, last: true });
+
+    const binary = steps.map(s => s.remainder).reverse().join('');
+
+    steps.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'd2b-div-row' + (s.last ? ' highlighted' : '');
+      row.innerHTML = `
+        <span class="d2b-div-num">${s.num}</span>
+        <span class="d2b-div-op">÷ 2 =</span>
+        <span class="d2b-div-q">${s.last ? '—' : s.quotient}</span>
+        <span class="d2b-div-op">resto</span>
+        <span class="d2b-div-r">${s.remainder}</span>
+        ${i === steps.length - 1 ? '<span class="d2b-div-arrow">⬅ primer bit</span>' : ''}
+      `;
+      table.appendChild(row);
+      setTimeout(() => row.classList.add('show'), i * 120);
+    });
+
+    setTimeout(() => {
+      document.getElementById('d2b-bin-out').textContent = binary;
+      resultRow.style.display = 'flex';
+    }, steps.length * 120 + 200);
+  }
+
+  // Run on load with default value
+  setTimeout(convertD2B, 300);
+
+  // touch swipe
+  let touchX = null;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    if (!touchX) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+    touchX = null;
+  });
+</script>
+</body>
+</html>
